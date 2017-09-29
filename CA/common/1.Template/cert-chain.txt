@@ -1,0 +1,7 @@
+The order of this file is as follows:
+1. Server/Client Certificate
+2. Intermediate CA Public Certificate
+... Additional Intermediate certificate's following the chain towards the root CA
+x. Root CA Public Certificate
+
+using cat: cat server.crt intermediate.crt root.crt > cert-chain.crt or cat server.crt ca-chain.crt > cert-chain.crt

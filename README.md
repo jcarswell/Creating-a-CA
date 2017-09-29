@@ -1,3 +1,7 @@
+To start this "Project" is intended to help guide you with creating a private Certificate Authority and operating the Certifcate Authority once it is up and running. This is not intended as a replacement for the documentation provided as part of OpenSSL, I strongly advise looking at the man pages at https://www.openssl.org/docs/manpages.html or using `man ca` and `man req` once you are comfortable with concepts of certificate signing reviewing `man x509` and `x509v3_config` will bring you up to date with current certificate standards. Another great resource is Ivan Ristić book (OpenSSL Cookbook)[https://www.feistyduck.com/books/openssl-cookbook/].
+
+This is currently a work in progress, you can find the openssl CA config file in the root directory openssl.cnf as well as the basic templates to get you started under the CA directory. Below you will find some of the common commands that I use day to day and the basic process of generating the certificates.
+
 ## Certificate Signing Requests (CSR)
 ### Create a CSR with a new Private Key
 ```shell
