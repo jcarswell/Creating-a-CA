@@ -1,8 +1,8 @@
-#Notes on security:
+# Notes on security:
 
 Your CA is only as secure as you make it, if you keep you certificate files on a encrypted USB stick and store it in a vault that only designated people have access to, your probably going down the right path. On the flip side if you are running this on a internet exposed server that hasn't been patched in years and has a password of 'Passw0rd' then your definetly doing it wrong and need to re-evaluate your security practices before implementing a trust system.
 
-#Definitions
+# Definitions
 Yes I know eveyones favorite thing, don't worry there will be a spelling test at the end :)
 
 Primary Key Infrastructure (PKI) - 
@@ -23,7 +23,7 @@ OCSP Stapaling - This isn't really a term that you need to know to manage a CA b
 
 Trust - This is a general term that refers to the certificate authority, but more specificatly the trustworthyness, i think i just made that up, of the authority.
 
-#Building up the CA
+# Building up the CA
 Okay time for the nittiy gritty, I will try not to make this boring while including as much information to help you build a proper CA with the right amount of dangerousness to wreak havoc. I do strongly encourage that you start by building a test CA that you can issues some certificates from to test the configuration and ensure that you have a good grasp on what the fridgesicles is going on as some change are near impossible to make on your producation CA without re-issuing all of your internediate CA's or worse, doh.
 
 1. Build the directory structure
@@ -40,8 +40,7 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
 4. The OpenSSL Configuration
  1. The OpenSSL config file and some background.
   - Lets start with this, fisrt grab the openssl.cnf example from [here \[CA/intermediate/openssl.cnf\]](..blob/master/CA/intermediate/openssl.cnf). Open the file up in you favorite text editor and lets take a deep dive into the configuration.
-  - File sections, the openssl configuration files uses the ini configuration standard, see [Wikipedia INI file](https://en.wikipedia.org/wiki/INI_file) for more detailed informationon the informal standard. Most of the section names are flexible as they are referanced at various points in the configuration files as are not directly referanced by openssl. Sections that are drectly referanced by OpenSSL are all of the standard commands, ca, crl, req, ocsp, etc. That's not to say that you couldn't use those name wouldn't be true however using them would either cause OpenSSL to outright fail to do anything or make unexpected changes to the action you are performing. This in mind this is countered by only having an effect when you actually call in the configuration file against the specific module, so to make things simple only use the sections as they are intended.
-  
+  - File sections, the openssl configuration files uses the ini configuration standard, see [Wikipedia INI file](https://en.wikipedia.org/wiki/INI_file) for more detailed informationon the informal standard. Most of the section names are flexible as they are referanced at various points in the configuration files as are not directly referanced by openssl. Sections that are drectly referanced by OpenSSL are all of the standard commands, ca, crl, req, ocsp, etc. That's not to say that you couldn't use those name wouldn't be true however using them would either cause OpenSSL to outright fail to do anything or make unexpected changes to the action you are performing. This in mind this is countered by only having an effect when you actually call in the configuration file against the specific module, so to make things simple only use the sections as they are intended. 
   Continuing on this point, manual pages (man) are your friend and the openssl documentation within is very extensive starting at OpenSSL as the main library documentation, `man openssl`, and then each of the OpenSSL modules, ca, ec, req, ts, etc. to look up the individual doncuments simply address the module directly from man, `man ca`, `man req`, `man x509`, etc.
   - Module sections, as previously stated, these are the sections that openssl checks when you call the module with the config flag. These are sections are normally pretty simplistic and tell OpenSSL that certin things are required or simply where to look during to get the defaults for the module. Examples of this are the `[ ca ]` section which tells the OpenSSL ca module which CA specification to look at, more on this later. Or the `[ req ]` section which tells the OpenSSL req(uest) module specification that are needed to perform the actions and ensure that specific feilds are present before creating the request and passing on the request for signing. These sections however aren't necissarly required as most of the option can be set via flags or simply using the OpenSSL defaults as is. Using the defaults does have some potential drawbacks when you are building a CA for a orginization or even as a public CA due to the ever evolving standards and security improvments that need to be tweeked to keep up with the changes that certain orginization are enforcing.
   - CA Specifications: If you are going to use OpenSSL to manage the CA, these specs are _really_ important. You will need at minimum two of these, unless you are getting a publicly signed CA certificate, one for your root certificate and one for you intermediate certificate, or more simply put one strict setting and one loose setting.
