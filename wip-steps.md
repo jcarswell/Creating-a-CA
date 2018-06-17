@@ -49,10 +49,10 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
   - The rest of the sections are to support the other sections where an option requires it own set of configurations.
  2. The OpenSSL config file (root edition) - If you are planning on getting a signed CA certifiacte from the likes of Comodo, DigiCert, etc skip to the end.
   - To start, grab the OpenSSL configuration file from [\[CA/root/openssl.cnf\]](..blob/master/CA/root/openssl.cnf). Once you have this saved open it up and we will go over it piece by piece, because I know you were excited for some light bed time reading.
-   1. Section `[ ca ]`
+   1. Section `[ ca ]`: OpenSSL Module definition
     - You still here? Good. This one is pretty easy, it starts with some basic info on this section as it is one on of the OpenSSL module section, I will skip over the comments for now as we will look at these in a later section. This has a few configuration options but we really only care about one, default_ca, there is also preserve and msie_hack. I'm not going to go into too much deatil on the specific configuration as that is all very well documented in the manual pages.
     - default_ca: Short and sweat, this tells the OpenSSL CA module which CA specification that you want to use.
-   2. Section `[ root ]`
+   2. Section `[ root ]`: CA specification
     - I think this could be a little more obvious... this is the first CA specification, and only one in this file. This is kinda an important section this basically tells the CA module what to do to sign a certificate, what requirments the request must meet in order to be signed, what needs to be part of the signed certificate and where to store the signed files
     - Storage: the first 11 items are all related to the files that are needed in order to store files, correctly sign certificate and ensure that if you have to revoke a certificate it happens properly. This section, like most is highly customizable depending on how you plan on setting up and configuring you certificate authority. The settings laied out in the confiurationt files are based on the directory prep that was done previously.
     - `dir`: this isn't actually a configuration item it's a variable. based on the provided template this is saying that when you are using this CA spec you will be in the directory above, the the provided template this is the 'CA' folder, and that the files for this CA spec will be in the 'root' directory. If this is you first CA that you are setting up, just copy the template down and leave this as is, when you are building the production CA make sure that this is setup correctly depending on how you have laied out your directory structure. The good new is you can move your 'root' folder where ever you want can call it what ever you want at any given point in time as long as you can access the files and this path is correct.
@@ -66,3 +66,29 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
     - `certificate`: This here is the (self) signed certificate slash your public key or atleast this tells OpenSSL where to look to find it.
     - `crlnumber`: This is similar the serial file with the exception that it is the "serial number" for your CRL.
     - `crl`: This is the location that the CRL is stored
+    - `crl_extensions`: this tells OpenSSL which section to look at for the CRL generation configuration
+    - `default_crl_days`: This is how long your CRL is valid for, in days
+    - `default_crl_hours`: This is the same as `default_crl_days` however this specifies CRL validity in days
+    - `default_md`: This is what will be used for your message digest, any of the md's supported by your current version of OpenSSL. At a minimum you should use sha256 or sha512.
+     - For a full list of available digests avalible use `openssl list-message-digest-algorithms`
+    - `name_opt` and `cert_opt`: This tells OpenSSL how to display the certificate when you are generating the certificate. For both of these options use `ca_default` to use the new OpenSSL defaults for displaying ther certificates as the old view is depriciated however is the default if not specified.
+    - `default_days`: The default validity period used when signing certificates. For server certificates, the typical recommendation is arround 375 days to add some give in leeway in the event that the certificate can be changes at the end of 1 year.
+    - `copy_extensions`: This should be used to set only as `none`. This tells OpenSSL whether it should copy extensions from the request or not.
+     - Quote from manual pages
+      > The copy_extensions option should be used with caution. If care is not taken then it can be a security risk. For example if a certificate request contains a basicConstraints extension with CA:TRUE and the copy_extensions value is set to copyall and the user does not spot this when the certificate is displayed then this will hand the requester a valid CA certificate.
+      > This situation can be avoided by setting copy_extensions to copy and including basicConstraints with CA:FALSE in the configuration file. Then if the request contains a basicConstraints extension it will be ignored.
+    - `policy`: This tells OpenSSL which section to look at for the CA signing policy
+   3. Section `[ policy_strict ]`: CA Policy
+    - Okay lets start with what this is section is. This is tied to the `policy` feild in the CA specfication section. This tells OpenSSL what to do with each of the Distinguished name (DN) feilds. There is three valid arguments for each of the dn's, match, supplied and optional.
+    - DN: The distinguished names are countryName, stateOrProvinceName, orginizationName, orginizationalUnitName, commonName and emailAddress each of these should be specified along with the one of the aforementioned values depending on the requirments of the specificate CA policy
+   4. Section `[ req ]`: OpenSSL Module definition
+    - `default_bits`: The default key size this will corespond with your choosen digest algorithim. As a minimum this should be 2048, which is the current minimum supported key length by browsers when using the sha digest, however for better future compatibility choose 4096 especially for the CA. using a longer key length doesn't inhibit your ability to sign request that use a shorter key lenght, though based on current standards unless under extrodinary circumstatnces, anything under 2048 should not be permitted for signing.
+    - `default_md`: Same deal as default_md from the CA definition, this defines the messige digest to use for creating the key and further generating the signing request.
+    - `string_mask`: This option masks out the use of certain string types. The current best practice is to use utf8only given the multilingual nature of the web today.
+    - `utf8`: This tells the request to use utf8 string format over ASCII when set to `yes`. If this isn't present it is the same as using `no`, which uses ASCII strings instead.
+    - `distinguished_name`: This tells OpenSSL where to look to determine what DN's are required in the signing request.
+    - `req_extensions`: This tells OpenSSL where to look for extensions to include in the signing request
+    - `x509_extensions`: Similar to req_extensions this specifies what x509 extensions to include in the signing request
+    - With all of this in mind, this isn't necessarily needed in the configuration that is included with the CA configuration however haveing this in the template that is used when generating a request is importation to generate a valid certificate under the current accepted standard.
+
+
