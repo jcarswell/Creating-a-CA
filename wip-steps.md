@@ -90,5 +90,8 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
       - `req_extensions`: This tells OpenSSL where to look for extensions to include in the signing request
       - `x509_extensions`: Similar to req_extensions this specifies what x509 extensions to include in the signing request
       - With all of this in mind, this isn't necessarily needed in the configuration that is included with the CA configuration however haveing this in the template that is used when generating a request is importation to generate a valid certificate under the current accepted standard.
-
+    5. Section `[ req_dn ]`: Configuration Section `distinguished_name`
+      - This sections has two components, What distingished names (DN) are in the request and if you have any defaults for those DN's. The list of common DN's is below of which there is seven of them, when specifing defaults for each DN it will simply be the `distinguished name_default` for example localityName_default
+        - countryName (c)
+        - sta
 
