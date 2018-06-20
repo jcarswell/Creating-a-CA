@@ -1,27 +1,47 @@
+# Opening Remarks
+
+What is this document inteded to be and what is it not intended to be? I am putting this together for two reasons one, so that I can get a better idea of what is invovled in managing a trust and two to provide a comprehensive guide one setting up a trust for you orginization. This is not intended to replace the excelent, though some time lacking, documentatioin on the openssl toolset, or to provide an in depth analysis on the RFC 5280 standard. The information herein is provide as a staring point to understanding the in's and out's of how certificates function as it relates to setting up an OpenSSL based trust. I can almost gaurente that there will be incorrect or incomplete information, I am not an expert on managing a trust. 
+I have found several useful articales out on the intra-webs that I have found provided a good starting point for me on getting going but nothing that was comprihensive enough that I didn't need to go and find five other articles and forms that helped me overcome many of the challenges that I have faced in setting up a basic internal PKI. That being said, one of my main intents with this path is to open up the possibility of easily adding various other elements into the mix that help make managing a PKI for an entreprise far easier.
+As I continue the journey of Understanding the in's and out's of this complex beast, or I find that Google, or others but mainly Google, have decided that certificates with or without certain extenstions defined that they will make the site invalid, I will countine with the intention of keeping this up to date. If you find that there is an issue or have some insights that I should add to the document please leave a comment or drop me a line.
+
+Some useful links
+[IETF RFC5280](https://tools.ietf.org/html/rfc5280) - Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile
+[Wikipedia](https://en.wikipedia.org) - Articals written by other peoples on the internet
+Articals to check out (likely referanced several times throught):
+ - Public Key Infrastructure
+ - X.509
+ - Certificate Authority
+[OpenSSL Manual Pages](https://www.openssl.org/docs/manmaster/man1/) - Alteratively these are avalible on most Linux system with the OpenSSL libries installed
+[OpenSSL Relevent Standards](https://www.openssl.org/docs/standards.html) - There just a few
+[Bulletproof TLS Newsletter](https://www.feistyduck.com/bulletproof-tls-newsletter/) - Just subscribe to this unless you don't want the best source of SSL/TLS news avalible
+[Bulletproof SSL and TLS](https://www.feistyduck.com/books/bulletproof-ssl-and-tls/) - If you want the best documentation ever on SSL and TLS this is it, though it's slightly longer than this document
+
+
 # Notes on security:
 
 Your CA is only as secure as you make it, if you keep you certificate files on a encrypted USB stick and store it in a vault that only designated people have access to, your probably going down the right path. On the flip side if you are running this on a internet exposed server that hasn't been patched in years and has a password of 'Passw0rd' then your definetly doing it wrong and need to re-evaluate your security practices before implementing a trust system.
 
+
 # Definitions
 Yes I know eveyones favorite thing, don't worry there will be a spelling test at the end :)
 
-Primary Key Infrastructure (PKI) - 
+Public Key Infrastructure (PKI) - This is the processes behind a trust. This is makes up all of the indivual components with in a trust and defines the roles. policies and proceedures on managing the connections between the parts and the parts themselves.
 
-Certificate Authority (CA)   
+Certificate Authority (CA) - This is the issuer of trusted certificates. This takes the signing request that is generated based on the private key and creates the public key that a client can then use to validate that the private key is trusted.
 
-Certificate
+Certificate - This is a combination of a key and information about that key such as its name and validity period. This can easily be confused with a key but the main differance being that a key is used to encipher or decipher data while the certificate contains information that makes the key trustable. One key can be used for many certificates but a certificate can only be used with one key.
 
-PEM -
+Privacy-Enhanced Mail (PEM) - Ya, I bet that caught you off gaurd too... we'll just for get what PEM stands for. PEM is the file format used to store cryptographic information such as keys and certificates. When you see an extension such as .crt .ket or .pem  it is very likely a base64 encoded file contining cryptographic data. So when you see some one calling there files myname.crt.pem and a second person calling theres myname.crt know that these are the same, just one follows proper file naming convetions and the other doesn't. I would fall in later catagory, I like the distinguisable extentions, then theres OpenSSH which simply forgoes the extensions other that .pub to indicate the public key.
 
-Key -
+Key - This is the actual piece that ecrypts and decrypts data. There is normally two key generated a private key, used to decipher data, and a public key, used to encipher data.
 
-Certificate Revokation List (CRL) -
+Certificate Revokation List (CRL) - A really ugly file that contains a list of all certificate serail numbers that have been revoked by the trust
 
 Online Certificate Status Protocol (OCSP) - This enables application to determin the validity of a certificate by querying a server
 
-OCSP Stapaling - This isn't really a term that you need to know to manage a CA but it is something that I will cover briefly here. OCSP Stapling is the process of keeping a local (webserver) copy of the CA's OCSP validation for your certificate reducing the number of additional calls a browser needs to make to validate that the certificate is valid. 
+OCSP Stapaling - This isn't really a term that you need to know to manage a CA but it is something that I will cover briefly here. OCSP Stapling is the process of keeping a local (webserver) copy of the CA's OCSP validation for a certificate reducing the number of additional calls a browser needs to make to validate that the certificate is valid. And allowing limited continuity in the event that the PKI is offline.
 
-Trust - This is a general term that refers to the certificate authority, but more specificatly the trustworthyness, i think i just made that up, of the authority.
+Trust - This is a general term that refers to the PKI, but more specificatly the trustworthyness, i think i just made that up, of the authority.
 
 # Building up the CA
 Okay time for the nittiy gritty, I will try not to make this boring while including as much information to help you build a proper CA with the right amount of dangerousness to wreak havoc. I do strongly encourage that you start by building a test CA that you can issues some certificates from to test the configuration and ensure that you have a good grasp on what the fridgesicles is going on as some change are near impossible to make on your producation CA without re-issuing all of your internediate CA's or worse, doh.
@@ -41,8 +61,8 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
   1. The OpenSSL config file and some background.
     * Lets start with this, fisrt grab the openssl.cnf example from [here \[CA/intermediate/openssl.cnf\]](..blob/master/CA/intermediate/openssl.cnf). Open the file up in you favorite text editor and lets take a deep dive into the configuration.
     * File sections, the openssl configuration files uses the ini configuration standard, see [Wikipedia INI file](https://en.wikipedia.org/wiki/INI_file) for more detailed informationon the informal standard. Most of the section names are flexible as they are referanced at various points in the configuration files as are not directly referanced by openssl. Sections that are drectly referanced by OpenSSL are all of the standard commands, ca, crl, req, ocsp, etc. That's not to say that you couldn't use those name wouldn't be true however using them would either cause OpenSSL to outright fail to do anything or make unexpected changes to the action you are performing. This in mind this is countered by only having an effect when you actually call in the configuration file against the specific module, so to make things simple only use the sections as they are intended. 
-  
-     Continuing on this point, manual pages (man) are your friend and the openssl documentation within is very extensive starting at OpenSSL as the main library documentation, `man openssl`, and then each of the OpenSSL modules, ca, ec, req, ts, etc. to look up the individual doncuments simply address the module directly from man, `man ca`, `man req`, `man x509`, etc.
+      
+      Continuing on this point, manual pages (man) are your friend and the openssl documentation within is very extensive starting at OpenSSL as the main library documentation, `man openssl`, and then each of the OpenSSL modules, ca, ec, req, ts, etc. to look up the individual doncuments simply address the module directly from man, `man ca`, `man req`, `man x509`, etc.
     * Module sections, as previously stated, these are the sections that openssl checks when you call the module with the config flag. These are sections are normally pretty simplistic and tell OpenSSL that certin things are required or simply where to look during to get the defaults for the module. Examples of this are the `[ ca ]` section which tells the OpenSSL ca module which CA specification to look at, more on this later. Or the `[ req ]` section which tells the OpenSSL req(uest) module specification that are needed to perform the actions and ensure that specific feilds are present before creating the request and passing on the request for signing. These sections however aren't necissarly required as most of the option can be set via flags or simply using the OpenSSL defaults as is. Using the defaults does have some potential drawbacks when you are building a CA for a orginization or even as a public CA due to the ever evolving standards and security improvments that need to be tweeked to keep up with the changes that certain orginization are enforcing.
     * CA Specifications: If you are going to use OpenSSL to manage the CA, these specs are _really_ important. You will need at minimum two of these, unless you are getting a publicly signed CA certificate, one for your root certificate and one for you intermediate certificate, or more simply put one strict setting and one loose setting.
     * Certificate Specifcations: These are the opposite of the CA specifications, and you will likely have many more of these, incuding one for each CA specifications as these are certificates as well. We'll go deeper into these later on.
@@ -88,10 +108,17 @@ Okay time for the nittiy gritty, I will try not to make this boring while includ
       - `utf8`: This tells the request to use utf8 string format over ASCII when set to `yes`. If this isn't present it is the same as using `no`, which uses ASCII strings instead.
       - `distinguished_name`: This tells OpenSSL where to look to determine what DN's are required in the signing request.
       - `req_extensions`: This tells OpenSSL where to look for extensions to include in the signing request
-      - `x509_extensions`: Similar to req_extensions this specifies what x509 extensions to include in the signing request
       - With all of this in mind, this isn't necessarily needed in the configuration that is included with the CA configuration however haveing this in the template that is used when generating a request is importation to generate a valid certificate under the current accepted standard.
     5. Section `[ req_dn ]`: Configuration Section `distinguished_name`
       - This sections has two components, What distingished names (DN) are in the request and if you have any defaults for those DN's. The list of common DN's is below of which there is seven of them, when specifing defaults for each DN it will simply be the `distinguished name_default` for example localityName_default
         - countryName (c)
-        - sta
-
+        - stateOtProviceName (ST)
+        - localityName (L)
+        - 0.orginizationName (O)
+        - commonName (CN)
+    6. Section `[ req_ext ]`: Configuration Section `req_extensions`
+      - This Section has the sole function of defining the extensions and their values for the signing request. Under todays current standard you must have the subjectAltname defined in order to create a valid SSL certificate. This section also say what the certificates intended use is.
+      - `subjectAltName`: This can be one of two options, a referance to a seperate configuration section or a comma seperated list using the OID:Value pairing. Valid OID for this are email, URI, DNS, RID, IP, and dirName. see `man x509v3_config` for more details. Knowing those values the primary values that will be used are DNS, for the DNS resolvable name and IP for the host IP address(es). 
+         When Using a seperate configuration section, you must prefice the OID with a position indcator, where as using a comma serpated list you don't need to. To do this you would simply do `IP.1` or `DNS.2`. The position indicator should incremet per OID, and not based on item number in the list. Either method is perfectly acceptable; however, one provides for better readibility and entry for those inexpericanced and the other is more efficent.
+      - `keyUsage`: leaving this field out is typically okay as most CAs will add the appropriate defenitions in when signing the certificate and will completely ignore this field. It is good to have a basic understanding of this though. There is two pieces to this puzzle the first is this field and the second is the `extendedKeyusage` field together the tell the device that is using the certificate what it is intended for and provides a measure of control over the certificates and their use providing additional security. Ensuring that bolth feilds are defined ensure that your public and private key pair that is intended to protect your web server isn't used to identify users.
+         This field is normally prefaced with the word critical folowed by one or more valid usage names. If you are filling in this field and generating a CSR that will be signed by a public certificate authority, using critical in this field is not a good idea as it will likely cause the signing request to be regected by the certificate authority. The valid names that are supported are digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign, encipherOnly and decipherOnly. For more details on key usage take a look at the [IEEE RFC5280 Section 4.2.1.3](https://tools.ietf.org/html/rfc5280#page-29) this gives a very indepth view of what each of these options are for.
