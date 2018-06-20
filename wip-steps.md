@@ -94,7 +94,8 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
         * `default_days`: The default validity period used when signing certificates. For server certificates, the typical recommendation is around 375 days to add some give in leeway in the event that the certificate can be changes at the end of 1 year.
         * `copy_extensions`: This should be used to set only as `none`. This tells OpenSSL whether it should copy extensions from the request or not.
           + Quote from manual pages:
-            > The copy_extensions option should be used with caution. If care is not taken then it can be a security risk. For example if a certificate request contains a basicConstraints extension with CA:TRUE and the copy_extensions value is set to copyall and the user does not spot this when the certificate is displayed then this will hand the requester a valid CA certificate.
+            
+            > The copy_extensions option should be used with caution. If care is not taken then it can be a security risk. For example if a certificate request contains a basicConstraints extension with CA:TRUE and the copy_extensions value is set to copyall and the user does not spot this when the certificate is displayed then this will hand the requester a valid CA certificate.<br>
             > This situation can be avoided by setting copy_extensions to copy and including basicConstraints with CA:FALSE in the configuration file. Then if the request contains a basicConstraints extension it will be ignored.
         * `policy`: This tells OpenSSL which section to look at for the CA signing policy
    3. Section `[ policy_strict ]`: CA Policy
