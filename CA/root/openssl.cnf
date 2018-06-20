@@ -14,8 +14,6 @@ default_ca = root
 # Directory and file locations. DIR will be the root directory for all CA files
 dir               = ./root
 
-certs             = $dir/certs
-crl_dir           = $dir/crl
 new_certs_dir     = $dir/newcerts
 database          = $dir/index.txt
 serial            = $dir/serial
@@ -29,7 +27,7 @@ certificate       = $dir/certs/intermediate.crt
 crlnumber         = $dir/crlnumber
 crl               = $dir/crl/intermediate.crl
 crl_extensions    = crl_ext
-default_crl_days  = 30
+default_crl_days  = 365
 
 # SHA-1 is deprecated, so use SHA-2 instead.
 default_md        = sha256
@@ -41,7 +39,7 @@ preserve          = no
 
 # This specifies which policy to use
 policy            = policy_strict
-copy_extensions   = copy
+copy_extensions   = none
 
 [ policy_strict ]
 # The root CA should only sign intermediate certificates that match.
@@ -52,28 +50,29 @@ organizationName        = match
 organizationalUnitName  = optional
 commonName              = supplied
 emailAddress            = optional
+localityName            = supplied
 
 
 [ req ]
 # Options for the `req` tool (`man req`).
 # Using the req tool is not recommended without using a config file as
 # the x509 extenstions are not prompted for.
-default_bits        = 2048
-distinguished_name  = req_distinguished_name
-extensions          = req_extensions
+default_bits        = 4096
+distinguished_name  = req_dn
+extensions          = req_ext
 string_mask         = utf8only
 
 # SHA-1 is deprecated, so use SHA-2 instead.
 default_md          = sha256
 
 # Extension to add when the -x509 option is used.
-x509_extensions     = v3_ca
+x509_extensions     = req_extv3_root
 
-[ req_distinguished_name ]
+[ req_dn ]
 # See <https://en.wikipedia.org/wiki/Certificate_signing_request>.
 countryName                     = Country Name (2 letter code)
 stateOrProvinceName             = State or Province Name
-localityName                    = Locality Name
+localityName                    = City or County
 0.organizationName              = Organization Name
 organizationalUnitName          = Organizational Unit Name
 commonName                      = Common Name
@@ -82,15 +81,20 @@ emailAddress                    = Email Address
 # Optionally, specify some defaults.
 countryName_default             = CA
 stateOrProvinceName_default     = Saskatchewan
-localityName_default            = Regina
+#localityName_default            = Regina
 #0.organizationName_default      = 
-#organizationalUnitName_default =
-#emailAddress_default           =
+#organizationalUnitName_default  =
+#emailAddress_default            =
 
-[ req_extensions ]
+[ req_ext ]
 subjectAltName                  = SAN (dns:domain,...)
+#subjectAltName                  = @alt_names
+#subjectAltName                  = DNS:example.com,IP:127.0.0.1,DNS:test.example.com
+#keyUsage                        = critical, keyEncipherment
+#extendedKeyUsage    = serverAuth, clientAuth, codeSigning, emailProtection, timeStamping,  msCodeInd, msCodeCom, msCTLSign, msSGC, msEFS, nsSGC
 
-[ v3_ca ]
+
+[ req_extv3_root ]
 # Extensions for a typical CA (`man x509v3_config`).
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer
