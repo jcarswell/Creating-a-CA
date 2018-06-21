@@ -87,7 +87,6 @@ stateOrProvinceName_default     = Saskatchewan
 #emailAddress_default            =
 
 [ req_ext ]
-subjectAltName                  = SAN (dns:domain,...)
 #subjectAltName                  = @alt_names
 #subjectAltName                  = DNS:example.com,IP:127.0.0.1,DNS:test.example.com
 #keyUsage                        = critical, keyEncipherment
@@ -112,7 +111,7 @@ keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 # Extensions for client certificates (`man x509v3_config`).
 basicConstraints = CA:FALSE
 nsCertType = client, email
-#Add cooments to the x509 config if you want
+#Add comments to the x509 config if you want
 #nsComment = "Client Certificate"
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer

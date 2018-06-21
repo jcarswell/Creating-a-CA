@@ -1,22 +1,25 @@
 [ req ]
 default_bits        = 2048
 distinguished_name  = req_dn
-req_extensions       = req_ext
+req_extensions      = req_ext
+x509_extensions     = req_ext
+encrypt_key         = no
 prompt              = no
 
 [ req_dn ]
 countryName         = CA
 stateOrProvinceName = Saskatchewan
 localityName        = Regina
-0.organizationName  = Regina Exhibition Association Ltd.
+0.organizationName  = 
 commonName          =
 
 [ req_ext ]
 subjectAltName      = @alt_names
-#subjectAltName      = DNS:example.com,IP:127.0.0.1,DNS:test.example.com
+#subjectAltName      = dirName:req_dn,DNS:example.com,IP:127.0.0.1,DNS:test.example.com
 extendedKeyUsage    = serverAuth
 #extendedKeyUsage    = serverAuth, clientAuth, codeSigning, emailProtection, timeStamping, OCSPSigning, ipsecIKE, msCodeInd, msCodeCom, msCTLSign, msEFS
 
 [alt_names]
+dirName             = req_dn
 #IP.1                =
 DNS.1               =

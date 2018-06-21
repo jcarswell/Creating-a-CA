@@ -107,7 +107,8 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       - `string_mask`: This option masks out the use of certain string types. The current best practice is to use utf8only given the multilingual nature of the web today.
       - `utf8`: This tells the request to use utf8 string format over ASCII when set to `yes`. If this isn't present it is the same as using `no`, which uses ASCII strings instead.
       - `distinguished_name`: This tells OpenSSL where to look to determine what DN's are required in the signing request.
-      - `req_extensions`: This tells OpenSSL where to look for extensions to include in the signing request
+      - `req_extensions`: This tells OpenSSL where to look for extensions to include in the signing request, this feild only specifies X.509 version 1 & 2 fields
+      - `x509_extensions`: This is essentailly the sames as `req_extension` but is for X.509 veraion 3 fields. With out this, you wont be able to generate a valid ssl certificate.
       - With all of this in mind, this isn't necessarily needed in the configuration that is included with the CA configuration however having this in the template that is used when generating a request is importation to generate a valid certificate under the current accepted standard.
    5. Section `[ req_dn ]`: Configuration Section `distinguished_name`
       - This sections has two components, What distinguished names (DN) are in the request and if you have any defaults for those DN's. The list of common DN's is below of which there is seven of them, when specifying defaults for each DN it will simply be the `distinguished name_default` for example `localityName_default`
@@ -116,9 +117,15 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
          * localityName (L)
          * 0.orginizationName (O)
          * commonName (CN)
-   6. Section `[ req_ext ]`: Configuration Section `req_extensions`
+   6. Sections Extension Definitions: Configuration Section `req_extensions` and `x509_extensions`
       - This Section has the sole function of defining the extensions and their values for the signing request. Under todays current standard you must have the subjectAltName defined in order to create a valid SSL certificate. This section also say what the certificates intended use is.
-      - `subjectAltName`: This can be one of two options, a reference to a separate configuration section or a comma seperated list using the OID:Value pairing. Valid OID for this are email, URI, DNS, RID, IP, and dirName. see `man x509v3_config` for more details. Knowing those values the primary values that will be used are DNS, for the DNS resolvable name and IP for the host IP address(es). 
          <br>When Using a separate configuration section, you must append the OID with a position indcator, where as using a comma separated list you don't need to. To do this you would simply do `IP.1` or `DNS.2`. The position indicator should increment per OID, and not based on item number in the list. Either method is perfectly acceptable; however, one provides for better readability and entry for those inexperienced and the other is more efficient.
+      - `subjectKeyIdentifier`: "The subject key identifier extension provides a means of identifying certificates that contain a particular public key." From RFC5280 Page 28. The jist of this is for OpenSSL it should be `hash`
+      - `authorityKeyIdentifier` = 
       - `keyUsage`: leaving this field out is typically okay as most CAs will add the appropriate definitions in when signing the certificate and will completely ignore this field. It is good to have a basic understanding of this though. There is two pieces to this puzzle the first is this field and the second is the `extendedKeyusage` field together the tell the device that is using the certificate what it is intended for and provides a measure of control over the certificates and their use providing additional security. Ensuring that both fields are defined ensure that your public and private key pair that is intended to protect your web server isn't used to identify users.
          <br>This field is normally prefaced with the word critical followed by one or more valid usage names. If you are filling in this field and generating a CSR that will be signed by a public certificate authority, using critical in this field is not a good idea as it will likely cause the signing request to be rejected by the certificate authority. The valid names that are supported are digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign, encipherOnly and decipherOnly. For more details on key usage take a look at the [IEEE RFC5280 Section 4.2.1.3](https://tools.ietf.org/html/rfc5280#page-29) this gives a very indepth view of what each of these options are for.
+       - 
+
+
+x Creating requests
+      - `subjectAltName`: This can be one of two options, a reference to a separate configuration section or a comma seperated list using the OID:Value pairing. Valid OID for this are email, URI, DNS, RID, IP, and dirName. see `man x509v3_config` for more details. Knowing those values the primary values that will be used are DNS, for the DNS resolvable name and IP for the host IP address(es). 
