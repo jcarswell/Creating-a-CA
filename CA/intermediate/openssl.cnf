@@ -14,8 +14,6 @@ default_ca = intermediate
 # Directory and file locations. DIR will be the root directory for all CA files
 dir               = ./intermediate
 
-certs             = $dir/certs
-crl_dir           = $dir/crl
 new_certs_dir     = $dir/newcerts
 database          = $dir/index.txt
 serial            = $dir/serial
@@ -41,7 +39,7 @@ preserve          = no
 
 # This specifies which policy to use
 policy            = policy_loose
-copy_extensions   = copy
+copy_extensions   = none
 
 [ policy_loose ]
 # Allow the intermediate CA to sign a more diverse range of certificates.
@@ -51,25 +49,25 @@ stateOrProvinceName     = supplied
 localityName            = optional
 organizationName        = optional
 organizationalUnitName  = optional
-commonName              = optional
+commonName              = supplied
 emailAddress            = optional
 
 [ req ]
 # Options for the `req` tool (`man req`).
 # Using the req tool is not recommended without using a config file as
 # the x509 extenstions are not prompted for.
-default_bits        = 2048
-distinguished_name  = req_distinguished_name
-extensions          = req_extensions
+default_bits        = 4096
+distinguished_name  = req_dn
+extensions          = req_ext
 string_mask         = utf8only
 
 # SHA-1 is deprecated, so use SHA-2 instead.
 default_md          = sha256
 
 # Extension to add when the -x509 option is used.
-x509_extensions     = v3_ca
+x509_extensions     = req_extv3_server
 
-[ req_distinguished_name ]
+[ req_dn ]
 # See <https://en.wikipedia.org/wiki/Certificate_signing_request>.
 countryName                     = Country Name (2 letter code)
 stateOrProvinceName             = State or Province Name
@@ -82,29 +80,15 @@ emailAddress                    = Email Address
 # Optionally, specify some defaults.
 countryName_default             = CA
 stateOrProvinceName_default     = Saskatchewan
-localityName_default            = Regina
-0.organizationName_default      = 
+#localityName_default            = Regina
+#0.organizationName_default      = 
 #organizationalUnitName_default =
 #emailAddress_default           =
 
-[ req_extensions ]
+[ req_ext ]
 subjectAltName                  = SAN (dns:domain,...)
 
-[ v3_ca ]
-# Extensions for a typical CA (`man x509v3_config`).
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer
-basicConstraints = critical, CA:true
-keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-
-[ v3_intermediate_ca ]
-# Extensions for a typical intermediate CA (`man x509v3_config`).
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always,issuer
-basicConstraints = critical, CA:true, pathlen:0
-keyUsage = critical, digitalSignature, cRLSign, keyCertSign
-
-[ usr_cert ]
+[ req_extv3_uesr ]
 # Extensions for client certificates (`man x509v3_config`).
 basicConstraints = CA:FALSE
 nsCertType = client, email
@@ -114,11 +98,10 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, emailProtection
+crlDistributionPoints=crl_intermediate
+authorityInfoAcccess=OCSP:URI:http://ocsp.example.com
 
-# This is what a client will use to check if a certificate is still valid
-# crlDistributionPoints = URI:http://cert.example.com/crl/intermediate
-
-[ server_cert ]
+[ req_extv3_server ]
 # Extensions for server certificates (`man x509v3_config`).
 basicConstraints = CA:FALSE
 nsCertType = server
@@ -128,18 +111,29 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer:always
 keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
+crlDistributionPoints=crl_intermediate
+authorityInfoAcccess=OCSP:URI:http://ocsp.example.com
 
-# This is what a client will use to check if a certificate is still valid
-# crlDistributionPoints = URI:http://cert.example.com/crl/intermediate
-
-[ crl_ext ]
-# Extension for CRLs (`man x509v3_config`).
-authorityKeyIdentifier=keyid:always
-
-[ ocsp ]
+[ req_extv3_ocsp ]
 # Extension for OCSP signing certificates (`man ocsp`).
 basicConstraints = CA:FALSE
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, digitalSignature
 extendedKeyUsage = critical, OCSPSigning
+crlDistributionPoints=crl_intermediate
+authorityInfoAcccess=OCSP:URI:http://ocsp.example.com
+
+[ crl_ext ]
+# Extension for CRLs (`man x509v3_config`).
+authorityKeyIdentifier=keyid:always
+
+[ crl_intermediate ]
+fullname=URI:http://example.com/crl/intermediate.crl
+CRLissuer=dirName:crl_issu_intermediate
+resons=keyCompromise,CACompromise
+
+[ crl_issu_intermediate ]
+C=<2 letter country code>
+O=<Orginization>
+CN=<Common Name of Issuer>
