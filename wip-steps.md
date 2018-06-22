@@ -140,7 +140,17 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       - `[ crl_root ] -> fullname`: You will want to put a little bit of thought behind this before you get to far ahead, that being said it doesn't really effect anything until you get down to signing the intermediate certificate.
       - `[ crl_issu_root ]`: same as above, Though you will want to ensure that this is set correctly otherwise your CRL checks will fail and it will look like everything is invalid
    2. 
+Generate a CA key by using the following command syntax:
+openssl genrsa -rand <Directory-Path>/<Random-Number-Filename> -out <Directory-Path>/<CA-Key-Filename> <Key-Strength: Number-of-bits>
 
+For example, to create the clientCA.key CA key using the random /shared/exampleCA/.rand number file and the key size of 2048 bits, type the following command:
+openssl genrsa -rand /shared/exampleCA/.rand -out /shared/exampleCA/clientCA.key 2048
+
+Generate a CA certificate by using the following command syntax:
+openssl req -x509 -new -key <Directory-Path>/<CA-Key-Filename> -out <Directory-Path>/<CA-Cert-Filename> -days <Number-of-Days>
+
+For example, to generate a clientCA.crt CA certificate of type x509, using the clientCA.key key that is valid for 7300 days, type the following command:
+openssl req -x509 -new -key /shared/exampleCA/clientCA.key -out /shared/exampleCA/clientCA.crt -days 7300
 
 
 x Creating requests
