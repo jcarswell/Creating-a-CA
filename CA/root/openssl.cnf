@@ -100,12 +100,14 @@ authorityKeyIdentifier = keyid:always,issuer
 basicConstraints = critical, CA:true
 keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 
+
 [ v3_intermediate_ca ]
 # Extensions for a typical intermediate CA (`man x509v3_config`).
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer
 basicConstraints = critical, CA:true, pathlen:0
 keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+crlDistributionPoints=crl_root
 
 [ usr_cert ]
 # Extensions for client certificates (`man x509v3_config`).
@@ -117,6 +119,8 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
 keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
 extendedKeyUsage = clientAuth, emailProtection
+crlDistributionPoints=crl_intermediate
+authorityInfoAcccess=OCSP;URI:http://ocsp.example.com
 
 # This is what a client will use to check if a certificate is still valid
 # crlDistributionPoints = URI:http://cert.example.com/crl/intermediate
@@ -131,6 +135,8 @@ subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer:always
 keyUsage = critical, digitalSignature, keyEncipherment
 extendedKeyUsage = serverAuth
+crlDistributionPoints=crl_intermediate
+authorityInfoAcccess=OCSP;URI:http://ocsp.example.com
 
 # This is what a client will use to check if a certificate is still valid
 # crlDistributionPoints = URI:http://cert.example.com/crl/intermediate
@@ -138,6 +144,26 @@ extendedKeyUsage = serverAuth
 [ crl_ext ]
 # Extension for CRLs (`man x509v3_config`).
 authorityKeyIdentifier=keyid:always
+
+[ crl_root ]
+fullname=URI:http://example.com/crl/root.crl
+CRLissuer=dirName:crl_issu_root
+resons=keyCompromise,CACompromise
+
+[ crl_intermediate ]
+fullname=URI:http://example.com/crl/intermediate.crl
+CRLissuer=dirName:crl_issu_intermediate
+resons=keyCompromise,CACompromise
+
+[ crl_issu_root ] 
+C=<2 letter country code>
+O=<Orginization>
+CN=<Common Name of Issuer>
+
+[ crl_issu_intermediate ] 
+C=<2 letter country code>
+O=<Orginization>
+CN=<Common Name of Issuer>
 
 [ ocsp ]
 # Extension for OCSP signing certificates (`man ocsp`).
