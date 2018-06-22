@@ -51,7 +51,7 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
    - Your directories can be either simple names or logical names, this is your preference, a simple name would be like 'root' or a logical name would be symbolic of the certificates name for example, my certificates name would be 'Silly CA EC1' therefor my logical name would be 'EC1'
    - Three directories is just a starting point, if you need 17 intermediate certificates then do that instead, ultimately you and your team need to be able to manage the PKI in a manner that suites the goals of the trust
 2. Initialize the certificate folders
-   - You will need to create several folders and files within each of the certificate folders. These folders and files are certs, crl, private and the files are serial and openssl.cnf, more on this in a moment.
+   - You will need to create several folders and files within each of the certificate folders. These folders and files are certs, crl, newcerts, private and the files are serial and openssl.cnf, more on this in a moment.
      * Firstly, as you will see in a bit, none of the folder/file names are fixed they can be configured in the OpenSSL config file
      * openssl.cnf: this is the default name for an OpenSSL config file and makes it easier for someone down the road to determine what the F' is going on, provided that they have some background in managing CA's the improper way, using OpenSSL utility. This can be changed to simplify the workflow and can be stored in completely different directory, the caveat being that the user managing the CA will still have to be able to access both this file and the certificate folder(s). You could also use a single files to manage all of the certificates
      * serial: this is an important one and it's use may not be immediately obvious, this is the certificate serial number, stored in hex, this will be the field that you need to know in order to revoke certificates that you don't have the original certificate file from. so when you initialize this value ensure that you are using a good serial number that should remain unique.
@@ -139,18 +139,15 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       - `[ req_dn ]`: Customize the defaults to your liking if you wish, just note that when we get to requests this section isn't actually used.
       - `[ crl_root ] -> fullname`: You will want to put a little bit of thought behind this before you get to far ahead, that being said it doesn't really effect anything until you get down to signing the intermediate certificate.
       - `[ crl_issu_root ]`: same as above, Though you will want to ensure that this is set correctly otherwise your CRL checks will fail and it will look like everything is invalid
-   2. 
-Generate a CA key by using the following command syntax:
-openssl genrsa -rand <Directory-Path>/<Random-Number-Filename> -out <Directory-Path>/<CA-Key-Filename> <Key-Strength: Number-of-bits>
-
-For example, to create the clientCA.key CA key using the random /shared/exampleCA/.rand number file and the key size of 2048 bits, type the following command:
-openssl genrsa -rand /shared/exampleCA/.rand -out /shared/exampleCA/clientCA.key 2048
-
-Generate a CA certificate by using the following command syntax:
-openssl req -x509 -new -key <Directory-Path>/<CA-Key-Filename> -out <Directory-Path>/<CA-Cert-Filename> -days <Number-of-Days>
-
-For example, to generate a clientCA.crt CA certificate of type x509, using the clientCA.key key that is valid for 7300 days, type the following command:
-openssl req -x509 -new -key /shared/exampleCA/clientCA.key -out /shared/exampleCA/clientCA.crt -days 7300
+   2. Generate the root certificate
+      1. Grab a copy of the [csr.cnf [CA/common/1. Template/csr.cnf]](..blob/master/CA/root/openssl.cnf) and open it up in your favorite text editor
+      2. Modify the following fields
+         - `[ req ] -> default_bits`: Change this to 4096 or better, as this is the heart of your trust make it as strong as possible
+         - `[ req ] -> encrypt_key`: Change this to yes, unless your pki policy states otherwise. In the event that this some how leaks you wan't to limit the possibility of Joe Blow being able to use this to generate his own certificate. You can also change this password at anytime in the future.
+         - `[ req_dn ]`: Complete this section in whole. The `commonName` can be pretty much anything as long as its utf8. Other fields that you may want to add are `emailAddress` and `orginizationalUnitName`.
+         - `[ alt_names ] -> DNS.1`: Comment out or delete this field as it isn't needed for this certificate
+      3. Save that file under your root CA folder as root-ca-req.cnf
+      4. run the following command while in your root ca folder `openssl req -new -config root-ca-req.cnf -newkey -rand private/.rand -days <number of days> -x509 -set_serial <your first serial number> -keyout private/root.key -out certs/root.crt`. To break this down, you are asking the OpenSSL req module to create a `-new` request using the `-config` located at the file you just saved, you want to generate a `-newkey` as specified either in the config or by a preceeding argument. You want to seed this certificate using the `-rand` file located under `private/.rand` as generated in section two. A we are generating a certificate not a signing request we want the certificate to be valid for the number of `-days`, this would typically be 10 to 20 years for your root certificate. You are then telling OpenSSL that you want a certificate by specifing `-x509`, and that certificate should have a `-serial` number of whatever you specify, this can either be a decimal value or a hex value by specifing `0x` before you number, just make sure to not include spaces. And finally you are going to output you key, `-keyout`, to the path as defined in your `openssl.cnf` and `-out`put you certifcate to the path as defined in your `openssl.cnf`
 
 
 x Creating requests
