@@ -5,19 +5,21 @@ req_extensions          = req_ext
 x509_extensions         = req_ext
 encrypt_key             = no
 prompt                  = no
+default_md              = sha256
 
 [ req_dn ]
 countryName             = CA
 stateOrProvinceName     = Saskatchewan
 localityName            = 
 0.organizationName      = 
-#orrganizationalUnitName =
+#organizationalUnitName =
 commonName              =
 emailAddress            =
 
 [ req_ext ]
 subjectAltName          = @alt_names
 #subjectAltName          = dirName:req_dn, DNS:example.com, IP:127.0.0.1, DNS:test.example.com
+subjectKeyIdentifier    = hash
 extendedKeyUsage        = serverAuth
 #extendedKeyUsage        = serverAuth, clientAuth, codeSigning, emailProtection, timeStamping, OCSPSigning, ipsecIKE, msCodeInd, msCodeCom, msCTLSign, msEFS
 
