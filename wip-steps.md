@@ -189,5 +189,3 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       5. So now you have your signed certificate, with this you have two new files your private key along with you public certificate, which containts your public key. the first, your private key, is under `private/root.crt`, this is the piece that you need to protect and never loose. Your private key is the what you will use to sign certificates, including intermediate certificate authority. The other file which you can grab from `cert/root.crt`, this is you public certificate, this is the piece that you will want to grab a copy of, this is what you will use to validate all certificates that are signed by the trust. For AD evironment, throw this under your group policy as a trusted certificate to distrubute to your enpoint devices, or under Linux, add this to you ca-certificates as a trusted certificate.
 1. Intermediate Certificate
 
-
-x Creating requests
