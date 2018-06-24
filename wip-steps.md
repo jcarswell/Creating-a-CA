@@ -131,6 +131,7 @@ Trust - This is a general term that refers to the PKI, but more specifically the
    1. To start to grab the [csr.cnf config [CA/common/1.Template/csr.cnf]](../Blob/master/CA/common/1.Template/csr.cnf) and open it up in you favorite text editor.
    2. Section `[ req ]`: OpenSSL req module configuration
       - This is difference here versus in the the `[ req ]` section is that this is setup to create the certificate signing request versus telling OpenSSL what information to collect to create the certificate signing request. With that said, I still wont cover the items that have been covered in previous sectios
+      - `subjectAltName`: This can be one of two options, a reference to a separate configuration section or a comma seperated list using the OID:Value pairing. Valid OID for this are email, URI, DNS, RID, IP, and dirName. see `man x509v3_config` for more details. Knowing those values the primary values that will be used are DNS, for the DNS resolvable name and IP for the host IP address(es). 
       - `encrypt_key`: This tells OpenSSL when creating a new key to not password protect the private key. This option is equivelent to `-nodes` when using openssl
       - `prompt`: This tells OpenSSL to not ask for any information during the request, and only use the configuration file.
    3. Section `[ req_dn ]`
@@ -190,4 +191,3 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
 
 
 x Creating requests
-      - `subjectAltName`: This can be one of two options, a reference to a separate configuration section or a comma seperated list using the OID:Value pairing. Valid OID for this are email, URI, DNS, RID, IP, and dirName. see `man x509v3_config` for more details. Knowing those values the primary values that will be used are DNS, for the DNS resolvable name and IP for the host IP address(es). 
