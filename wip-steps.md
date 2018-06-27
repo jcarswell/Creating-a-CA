@@ -228,3 +228,14 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       6. Go back and populate the `[ crl_issu_intermediate ]` section with the details of your newly minted intermediate Certificate Authority. You will also want to do the same for ` [ crl_intermediate ] -> fullname` if you haven't done so yet. Lastly you will want to ensure that all of the `[ req_extv3_* ] -> authorityInfoAcccess` fields to point to the OCSP server.
       7. Create the certificate chain that can be stored in the template folder under common. To do this create a new file, or concatinate the two file together to make a new file, and put first the intermediate certificate in followed by the root certificate.  
          The Chain order should be lowest to highest, meaning the first certificate shoud be the server certificate followed by the intermediate that signed it the the authority that signed it, etc, until you reach your root certificate. If you have any additional certificate, say for extended validation, they would be at the end of the file.
+   2. Bonus: Active Directory Certificate Servces
+      1. Installing the Active Directory Certificate services role
+         1. Install the Certificate Authority and if needed the Certificate Authority Web Enrollment 
+         2. You will then choose either a standalone or enterprise PKI. The differance being whether you will be integrating with active directory and using the auto enrollment policy, Enterprise PKI, or if the system will be non-integrated with active directory.
+         3. Depending on how you want to set up this portion of the certificate authority you can either run this as the Root CA or the Subordinate CA, the latter of which we will be covering.
+         4. You can either create a new private key or use one that you you generate similar to the intermediate certificate. We will cover creating a new key.
+         5. Fill out the Cryptography page as per your PKI
+         6. Fill in the Common name same as you did on the previous two certificates. In the Distinguished name suffix feild be sure to add the O (Orginization), C (Country), and ST (state or province name) distinguished names, along with any other DNs that you wish to include.
+         7. You will want to "Save a certificate request to file and manually send it later to a partent CA:" and save it at a location and with a file name that you can grab later.
+         8. Change the paths as you need or like
+         9. Grab the certificate signing request and sign in with your CA.
