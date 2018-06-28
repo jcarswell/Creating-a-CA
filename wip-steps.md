@@ -249,8 +249,8 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
             As a note in order to sign the certificate, I had to changes the `[ policy_strict ]` section of the root certificate authority openssl config to permit non-matching fields, even though the fields do match...  
               
             `openssl ca -config root/openssl.cnf -extensions req_extv3_intermediate -days 3650 -infiles <path to the certificate signing request from the AD setup> -out root/certs/AD_intermediate.csr`
-          10. Generate the CRL for your root certificate authority  
-              `openssl ca -config root/openssl.csr -gencrl -out root/crl/root.crl`  
-              I will cover this in more detail in a later section, for the time being you will want grab the generated CRL and install it in your CRL webserver. This needs to be inplace before you can start active directory certificate services.
-          11. Under Server Manager Roles, you should see the role for Active Directory cer tificate services, with one of the sub items being the Certificate authority, should be the last item. When you right click on this you will have the option to Install CA Certificate. Choose this and point it at the newly created certificate.
+         10. Generate the CRL for your root certificate authority  
+             `openssl ca -config root/openssl.csr -gencrl -out root/crl/root.crl`  
+             I will cover this in more detail in a later section, for the time being you will want grab the generated CRL and install it in your CRL webserver. This needs to be inplace before you can start active directory certificate services. If needed you could set this up on your AD CS server.
+         11. Under Server Manager Roles, you should see the role for Active Directory cer tificate services, with one of the sub items being the Certificate authority, should be the last item. When you right click on this you will have the option to Install CA Certificate. Choose this and point it at the newly created certificate.
 
