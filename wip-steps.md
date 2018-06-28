@@ -247,7 +247,7 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
          8. Change the paths as you need or like
          9. Grab the certificate signing request and sign in with your CA.  
             As a note in order to sign the certificate, I had to changes the `[ policy_strict ]` section of the root certificate authority openssl config to permit non-matching fields, even though the fields do match...  
-            <br>  
+            <br>
             `openssl ca -config root/openssl.cnf -extensions req_extv3_intermediate -days 3650 -infiles <path to the certificate signing request from the AD setup> -out root/certs/AD_intermediate.csr`
          10. Generate the CRL for your root certificate authority  
              `openssl ca -config root/openssl.csr -gencrl -out root/crl/root.crl`  
