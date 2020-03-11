@@ -228,7 +228,8 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
       4. run the following command while in your intermediate ca folder `openssl req -new -config intermediate-ca-req.cnf -newkey rsa -rand private/.rand -keyout private/intermediate.key -out intermediate.csr`.  
       To break this down, you are asking the OpenSSL **req** module to create a `-new` request using the `-config` located at the file you just saved, you want to generate a `-newkey` as specified either in the config or by a preceeding argument. You want to seed this certificate using the `-rand` file located under `private/.rand` as generated in section two. And finally you are going to output you key, `-keyout`, to the path as defined in your `openssl.cnf` and `-out`put the csr to the path specified.
       2. Navigate out of you intermediate directory back to the root of your PKI.  
-         Run the following `openssl ca -config root/openssl.cnf -out intermediate/certs/intermediate.crt -extensions req_extv3_intermediate -infiles intermediate/intermediate-ca-req.cnf`  
+         Run the following  
+         ```openssl ca -config root/openssl.cnf -out intermediate/certs/intermediate.crt -extensions req_extv3_intermediate -infiles intermediate/intermediate-ca-req.cnf```  
          To break this down you are using the openssl **ca** module with the `-config` file of your root certificate authority to `-out`put the certificate to the location as specified in your intermedate certificate authority with the X.509 `-extensions` for the intermediate authority specification using the the certificate signing request, `-infiles`, that was out but by the request form the previous step.  
          A special note on this point, `-infiles` should be the last argument for the command in the event you want to run several csr through at the same time, alternativly you could use `-in` instead. If you screw up on this process you can reset the cert.db file and newcerts directory, though this is not recommended, instead you should regenerate your root certifiacate, so that incorrect intermediate if it ever gets out some how isn't valid. If you are in your test CA, and you screw up, its a good chance to try out revoking certificates.
       5. So now you have your signed certificate, with this you have two new files the private key along with the public certificate, which containts the public key. The first is the private key which is under `private/intermediate.key`, this is the piece that needs to be protected and never lost. The private key is the what you will use to sign certificates for users, server, etc. The other file, which you can grab a copy of, is `certs/intermediate.crt`, this is the public certificate, you will primarily use this as part of the certificate chain that you install on servers to ensure that you have a full certificate chain to fully validate the authenticity of the certficate. For client devices you don't need to do anything with this certificate as the public certificate for your root certificate authority will validate all server certificates.
@@ -240,7 +241,7 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
          1. Install the Certificate Authority and if needed the Certificate Authority Web Enrollment 
          2. You will then choose either a standalone or enterprise PKI. The differance being whether you will be integrating with active directory and using the auto enrollment policy, Enterprise PKI, or if the system will be non-integrated with active directory.
          3. Depending on how you want to set up this portion of the certificate authority you can either run this as the Root CA or the Subordinate CA, the latter of which we will be covering.
-         4. You can either create a new private key or use one that you you generate similar to the intermediate certificate. We will cover creating a new key.
+         4. You can either create a new private key or use one that you you generate similar to the intermediate certificate. We will cover creating a new key and based on testing, I don't recommend using an existing one, unless you are importing a previously signed key.
          5. Fill out the Cryptography page as per your PKI
          6. Fill in the Common name same as you did on the previous two certificates. In the Distinguished name suffix feild be sure to add the O (Orginization), C (Country), and ST (state or province name) distinguished names, along with any other DNs that you wish to include.
          7. You will want to "Save a certificate request to file and manually send it later to a partent CA:" and save it at a location and with a file name that you can grab later.
@@ -248,9 +249,14 @@ Okay time for the nitty gritty, I will try not to make this boring while includi
          9. Grab the certificate signing request and sign in with your CA.  
             As a note in order to sign the certificate, I had to changes the `[ policy_strict ]` section of the root certificate authority openssl config to permit non-matching fields, even though the fields do match...  
             <br>
-            `openssl ca -config root/openssl.cnf -extensions req_extv3_intermediate -days 3650 -infiles <path to the certificate signing request from the AD setup> -out root/certs/AD_intermediate.csr`
+            ```openssl ca -config root/openssl.cnf -extensions req_extv3_intermediate -days 3650 -infiles <path to the certificate signing request from the AD setup> -out root/certs/AD_intermediate.csr```
          10. Generate the CRL for your root certificate authority  
-             `openssl ca -config root/openssl.csr -gencrl -out root/crl/root.crl`  
+             ```openssl ca -config root/openssl.csr -gencrl -out root/crl/root.crl```  
              I will cover this in more detail in a later section, for the time being you will want grab the generated CRL and install it in your CRL webserver. This needs to be inplace before you can start active directory certificate services. If needed you could set this up on your AD CS server.
          11. Under Server Manager Roles, you should see the role for Active Directory cer tificate services, with one of the sub items being the Certificate authority, should be the last item. When you right click on this you will have the option to Install CA Certificate. Choose this and point it at the newly created certificate.
+         12. Provided everything was done right and the server can reach the CRL distribution point you should see the service running that the name under Active Directory Certificate Services change to the name of the certificate.
+
+# Creating and Managing Certificates
+1. Generating the certificate signing request
+   1. This can be done in a few ways and have a few different caveates depending on the method. The main ways are using the built-in request manager of a system, including using OpenSSLs request module without a configuration and generating 
 
